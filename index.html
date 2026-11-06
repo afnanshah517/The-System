@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The System: Fitness Quests</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#050a18">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="The System">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#f1f5fb;--panel:#fff;--ink:#0d1b33;--dim:#5a6b88;--line:#2a6df4;--glow:rgba(42,109,244,.25);--ok:#12a36b;--bad:#d6334a;--bar:#dbe5f7;--gold:#b7791f;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#050a18;--panel:#0a1430;--ink:#e6efff;--dim:#8aa0c8;--line:#3b8cff;--glow:rgba(59,140,255,.35);--ok:#35e0a0;--bad:#ff5d73;--bar:#16254a;--gold:#ffd166;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#050a18;--panel:#0a1430;--ink:#e6efff;--dim:#8aa0c8;--line:#3b8cff;--glow:rgba(59,140,255,.35);--ok:#35e0a0;--bad:#ff5d73;--bar:#16254a;--gold:#ffd166;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Rajdhani","Segoe UI",system-ui,sans-serif;font-size:18px;font-weight:500}
+main{max-width:520px;margin:0 auto;padding:14px 14px calc(96px + env(safe-area-inset-bottom,0px))}
+section[hidden]{display:none}
+.win{background:var(--panel);border:1.5px solid var(--line);box-shadow:0 0 18px var(--glow),inset 0 0 14px var(--glow);padding:14px 16px;margin-bottom:14px;border-radius:4px}
+h1,h2{margin:0 0 8px;font-weight:700;letter-spacing:.04em}
+h1{font-size:26px}h2{font-size:21px;color:var(--line)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.rank{font-size:44px;font-weight:700;color:var(--line);line-height:1;text-shadow:0 0 12px var(--glow)}
+.dim{color:var(--dim)}.small{font-size:15px}
+.bar{height:10px;background:var(--bar);border-radius:2px;overflow:hidden;margin:6px 0}
+.bar>i{display:block;height:100%;background:var(--line);box-shadow:0 0 10px var(--line);transition:width .4s}
+.stat{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bar);padding:4px 0;min-height:44px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.q{padding:10px 0;border-bottom:1px solid var(--bar)}
+.q.done .name{color:var(--ok)}
+button{font:inherit;font-weight:700;color:var(--ink);background:transparent;border:1.5px solid var(--line);border-radius:3px;padding:8px 14px;min-height:44px;cursor:pointer}
+button:hover{background:var(--glow)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--line);outline-offset:2px}
+button.main{background:var(--line);color:#fff;width:100%;margin-top:10px}
+button:disabled{opacity:.4;cursor:not-allowed}
+.warn{color:var(--bad);font-weight:700;margin:0 0 8px}
+.gold{color:var(--gold);font-weight:700}
+label{display:block;margin:10px 0 4px}
+input,select{font:inherit;width:100%;min-height:44px;padding:8px 10px;background:var(--bg);color:var(--ink);border:1.5px solid var(--line);border-radius:3px}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:4;background:var(--panel);border-top:1.5px solid var(--line);box-shadow:0 -4px 18px var(--glow);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav div{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;min-height:56px;color:var(--dim);text-decoration:none;font-weight:700;font-size:14px}
+nav a svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav a[aria-current="page"]{color:var(--line);text-shadow:0 0 10px var(--glow)}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));width:min(92%,480px);background:var(--panel);border:1.5px solid var(--line);box-shadow:0 0 22px var(--glow);padding:12px 16px;border-radius:4px;display:none;z-index:5}
+@media (prefers-reduced-motion:reduce){.bar>i{transition:none}}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;font-weight:400;line-height:1.45}
+h1,h2,.rank,nav a,button{font-family:"Rajdhani","Segoe UI",system-ui,sans-serif}
+header.app{max-width:520px;margin:0 auto;padding:14px 14px 0;display:flex;justify-content:space-between;align-items:center}
+header.app b{font:700 22px "Rajdhani",sans-serif;letter-spacing:.12em}
+.win{border:1px solid var(--bar);border-radius:14px;box-shadow:0 2px 10px rgba(5,10,30,.08);padding:16px}
+.win h2{font-size:18px;letter-spacing:.06em;color:var(--ink)}
+h1{font-size:24px}
+.rank{width:64px;height:64px;display:grid;place-items:center;font-size:38px;border:2px solid var(--line);border-radius:14px;text-shadow:none}
+.bar{height:12px;border-radius:99px}.bar>i{border-radius:99px;box-shadow:none}
+.bar.sm{height:6px;margin:8px 0 0}
+button{border-radius:10px;border-width:1px;font-size:17px}
+button.main{border-radius:12px;min-height:48px;font-size:18px}
+button.ghost{padding:6px 12px;border-color:var(--bar);color:var(--dim)}
+button.danger{border-color:var(--bad);color:var(--bad);width:100%}
+.btns{display:flex;gap:6px}
+.btns button{min-width:44px;padding:8px 0}
+details{margin-top:14px}
+summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:var(--dim)}
+nav{box-shadow:0 -2px 12px rgba(5,10,30,.1);border-top:1px solid var(--bar)}
+#toast{border-radius:12px}
+.timer{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px}
+.clock{font:700 30px "Rajdhani",sans-serif;font-variant-numeric:tabular-nums}
+.today h1{margin:2px 0 0}
+.streak{text-align:center;min-width:76px;padding:8px 10px;border:1px solid var(--bar);border-radius:12px}
+.streak b{display:block;font:700 28px "Rajdhani",sans-serif;color:var(--line);line-height:1}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:14px 0 6px;text-align:center}
+.wd{display:flex;flex-direction:column;align-items:center;gap:4px}
+.wd i{font-style:normal;font-weight:700;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--bar)}
+.wd.done i{background:var(--ok);border-color:var(--ok);color:#fff}
+.wd.today i{border-color:var(--line);color:var(--line)}
+.wd.missed i{border-color:var(--bad);color:var(--bad)}
+.runbox{margin-top:12px;padding:12px;border:1px solid var(--bar);border-radius:12px}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-bottom:10px}
+.stats3 span{display:block}
+.stats3 .clock{font-size:26px}
+.runbox .btns button{flex:1}
+.runbox .btns .main{width:auto;margin:0;flex:2}
+details.win summary{font:700 18px "Rajdhani",sans-serif;letter-spacing:.06em;min-height:28px;cursor:pointer}
+details.win ol{padding-left:20px;margin:12px 0 0}
+details.win li{margin-bottom:6px}
+</style>
+</head>
+<body>
+<header class="app"><div><b>THE SYSTEM</b> <span class="dim small">Fitness quests</span></div><button id="theme" class="ghost" aria-label="Switch between light and dark theme">Theme</button></header>
+<main>
+<section id="status"></section>
+<section id="quest" hidden></section>
+<section id="gate" hidden></section>
+<section id="shop" hidden></section>
+<section id="profile" hidden>
+<div class="win"><h2>Player data</h2>
+<p class="dim small">The System uses your body data to set quest sizes that fit you. This is a guide, not medical advice. Stop if something hurts, and check with a doctor if you have a health condition.</p>
+<label for="h">Height (cm)</label><input id="h" type="number" inputmode="decimal" min="100" max="230">
+<label for="w">Weight (kg)</label><input id="w" type="number" inputmode="decimal" min="30" max="250">
+<label for="lv">Current fitness</label>
+<select id="lv"><option value="0.75">Beginner</option><option value="1" selected>Regular exercise</option><option value="1.25">Advanced</option></select>
+<button class="main" id="saveP">Save player data</button>
+<p id="pinfo" class="dim"></p></div>
+<div class="win"><h2>Settings</h2><button id="reset" class="danger">Reset all progress</button><details><summary>Testing tools (for checking the app)</summary><p class="dim small">Jump ahead one day to see penalties and new quests.</p><button id="nextday">Skip to next day</button></details></div>
+</section>
+</main>
+<nav aria-label="Main"><div>
+<a href="#status" data-v="status"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 4-7 8-7s7 2 8 7"/></svg>Status</a>
+<a href="#quest" data-v="quest"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/><path d="M9 8h6M9 11h6"/></svg>Quest</a>
+<a href="#gate" data-v="gate"><svg viewBox="0 0 24 24"><path d="M5 21V10a7 7 0 0 1 14 0v11z"/><path d="M9 21v-6a3 3 0 0 1 6 0v6"/></svg>Gates</a>
+<a href="#shop" data-v="shop"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg>Shop</a>
+<a href="#profile" data-v="profile"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="17" r="2"/></svg>Player</a>
+</div></nav>
+<div id="toast" role="status"></div>
+<script>
+var KEY="system-fitness-v1",VIEWS=["status","quest","gate","shop","profile"];
+var EX=[{id:"push",name:"Push-ups",stat:"STR",step:5,u:""},{id:"sit",name:"Sit-ups",stat:"VIT",step:5,u:""},{id:"squat",name:"Squats",stat:"AGI",step:5,u:""},{id:"run",name:"Run",stat:"STA",step:0.5,u:" km"}];
+var EMG=["Jumping jacks","Mountain climbers","Plank seconds","High knees"];
+var SHOP=[{id:"cheat",name:"Cheat meal",cost:150},{id:"game",name:"One hour of gaming",cost:100},{id:"rest",name:"Rest-day pass (cancels one penalty)",cost:200},{id:"gift",name:"Treat yourself",cost:300},{id:"potion",name:"Potion (+50 XP)",cost:120}];
+var GATES=[{id:"g1",name:"E-rank gate: Goblin cave",min:1,m:2,ex:["push","squat"],rw:150},{id:"g2",name:"D-rank gate: Double dungeon",min:5,m:2.5,ex:["push","sit","squat"],rw:300},{id:"g3",name:"C-rank gate: Ant nest",min:10,m:3,ex:["push","sit","squat","run"],rw:500}];
+var SHADOWS=["Igris","Iron","Tank","Tusk","Beru","Bellion","Kaisel"];
+var TITLES={E:"Weakest Hunter",D:"Rising Hunter",C:"Iron Hunter",B:"Elite Hunter",A:"National-Level Hunter",S:"Shadow Monarch"};
+function dn(off){var n=new Date();return Math.floor((n.getTime()-n.getTimezoneOffset()*6e4)/864e5)+(off||0)}
+function fresh(){return{level:1,xp:0,pts:0,free:0,streak:0,stats:{STR:10,VIT:10,AGI:10,STA:10},day:dn(),prog:{push:0,sit:0,squat:0,run:0},done:false,penalty:false,inv:{},offset:0,emg:null,shadows:[],gates:{},prof:null,note:""}}
+var S;
+function load(){var r=null;try{r=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+S=Object.assign(fresh(),r||{});S.day=(r&&r.day&&r.day>100000)?r.day:dn(S.offset);
+if(!r||!r.emg&&r.day===undefined)S.emg=null;if(!S.localDay){S.localDay=1;S.day=dn(S.offset)}rollover(true)}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function cur(){return dn(S.offset)}
+function newEmg(){if(Math.random()<0.4){var n=EMG[Math.floor(Math.random()*EMG.length)];S.emg={name:n,t:Math.round(30*fac()/5)*5||15,p:0,done:false}}else S.emg=null}
+function rollover(first){
+if(S.day!==cur()){
+var had=S.day&&!S.done;
+if(had){if(S.inv.rest>0){S.inv.rest--;S.penalty=false;S.note="Rest-day pass used. No penalty."}else{S.penalty=true;S.streak=0;S.note="Quest failed. Penalty quest: targets are 50% higher today."}}
+else{S.penalty=false;S.note=""}
+S.day=cur();S.prog={push:0,sit:0,squat:0,run:0};S.done=false;newEmg();save()}
+else if(first&&S.emg===null&&!S.done&&!S.emgRolled){S.emgRolled=true;newEmg();save()}}
+function fac(){var p=S.prof;if(!p||!p.h||!p.w)return 1;var b=p.w/Math.pow(p.h/100,2);
+var f=b>=35?.55:b>=30?.65:b>=25?.85:b<18.5?.9:1;return f*(p.lv||1)}
+function tgt(e){var m=S.penalty?1.5:1,L=S.level-1;
+if(e.id==="run")return Math.max(.5,Math.round(Math.min(10,1+L*.5)*fac()*m*2)/2);
+return Math.max(5,Math.min(150,Math.round(Math.min(100,20+L*5)*fac()*m/5)*5))}
+function need(){return Math.round(100*Math.pow(S.level,1.4)/10)*10}
+function applyTheme(){if(S.theme)document.documentElement.dataset.theme=S.theme}
+function rank(){var l=S.level;return l<5?"E":l<10?"D":l<20?"C":l<30?"B":l<40?"A":"S"}
+function fmt(n){return Number.isInteger(n)?n:n.toFixed(1)}
+function toast(t){var el=document.getElementById("toast");el.textContent="[System] "+t;el.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(function(){el.style.display="none"},3800)}
+function addXp(n){S.xp+=n;var up=0;while(S.xp>=need()){S.xp-=need();S.level++;S.free+=3;up++}return up}
+function extract(){var left=SHADOWS.filter(function(s){return S.shadows.indexOf(s)<0});
+if(!left.length)return"";if(Math.random()<.5){var s=left[0];S.shadows.push(s);return" Shadow extraction succeeded: "+s+" joins you."}return" Shadow extraction failed."}
+function rGate(){var d=cur(),h='<div class="win"><h2>Gates</h2><p class="dim small">Hard one-time challenges. Clear a gate for big rewards and a shadow extraction roll. Each gate resets after 7 days.</p></div>';
+GATES.forEach(function(g){var locked=S.level<g.min,last=S.gates[g.id],cd=last!==undefined&&d-last<7;
+var parts=g.ex.map(function(id){var e=EX.filter(function(x){return x.id===id})[0],v=id==="run"?Math.round(tgt(e)*g.m*2)/2:Math.round(tgt(e)*g.m/5)*5;return e.name+" "+fmt(v)+e.u}).join(", ");
+h+='<div class="win"><h2>'+g.name+'</h2><p>'+(locked?'<span class="dim">Unlocks at level '+g.min+'</span>':parts)+'</p><div class="dim small">Reward: '+g.rw+' XP, '+(g.rw/3|0)+' points</div><button class="main" data-gate="'+g.id+'" '+(locked||cd?"disabled":"")+'>'+(cd?"Resets in "+(7-(d-last))+" days":locked?"Locked":"Mark gate cleared")+'</button></div>'});
+document.getElementById("gate").innerHTML=h}
+function rShop(){var h='<div class="win"><h2>Reward shop</h2><p class="dim small">'+S.pts+' points available</p>';
+SHOP.forEach(function(i){h+='<div class="stat"><span>'+i.name+'<br><span class="dim small">'+i.cost+' points</span></span><button data-buy="'+i.id+'" '+(S.pts<i.cost?"disabled":"")+'>Buy</button></div>'});
+h+='</div><div class="win"><h2>Inventory</h2>';var any=false;
+SHOP.forEach(function(i){var n=S.inv[i.id]||0;if(n>0){any=true;if(i.id==="rest")h+='<div class="stat"><span>'+i.name+' × '+n+'</span><span class="dim small">Used automatically</span></div>';else h+='<div class="stat"><span>'+i.name+' × '+n+'</span><button data-use="'+i.id+'">Use</button></div>'}});
+if(!any)h+='<p class="dim">Empty. Complete quests to earn points.</p>';
+document.getElementById("shop").innerHTML=h+"</div>"}
+function pinfo(){var p=S.prof,el=document.getElementById("pinfo");
+if(!p){el.textContent="Not set yet. Quests use default sizes.";return}
+var b=p.w/Math.pow(p.h/100,2);el.textContent="BMI "+b.toFixed(1)+". Quest sizes are now set to "+Math.round(fac()*100)+"% of the standard amount."}
+var SN={STR:"Strength",VIT:"Vitality",AGI:"Agility",STA:"Stamina"};
+var R={on:false,pts:[],dist:0,id:null,err:"",lock:null};
+function dstr(o){var d=new Date();d.setDate(d.getDate()+S.offset+(o||0));return d}
+function thin(a){if(a.length<=300)return a;var k=Math.ceil(a.length/300);return a.filter(function(_,i){return i%k===0||i===a.length-1})}
+function hav(a,b){var r=Math.PI/180,x=Math.sin((b.lat-a.lat)*r/2),y=Math.sin((b.lon-a.lon)*r/2),q=x*x+Math.cos(a.lat*r)*Math.cos(b.lat*r)*y*y;return 12742*Math.asin(Math.sqrt(q))}
+function gpsOk(pos){var c=pos.coords;if(c.accuracy>40)return;var p={lat:c.latitude,lon:c.longitude};R.err="";var l=R.pts[R.pts.length-1];if(l){var d=hav(l,p);if(d<0.004||d>0.2)return;R.dist+=d}R.pts.push(p)}
+function gpsErr(e){R.err=e.code===1?"Location is blocked. Allow location for this page, or log distance with the + button.":"Waiting for a GPS signal. Go outside for a better fix."}
+function rStart(){if(R.on)return;R.on=true;R.pts=[];R.dist=0;R.err="";T.run={acc:0,start:Date.now(),run:true};
+if(navigator.geolocation){R.id=navigator.geolocation.watchPosition(gpsOk,gpsErr,{enableHighAccuracy:true,maximumAge:2000,timeout:30000})}else{R.err="GPS is not available here. The timer still works; log distance with the + button."}
+try{navigator.wakeLock&&navigator.wakeLock.request("screen").then(function(l){R.lock=l}).catch(function(){})}catch(e){}
+rQuest()}
+function rEnd(log){try{if(R.id!==null&&navigator.geolocation)navigator.geolocation.clearWatch(R.id)}catch(e){}
+try{if(R.lock)R.lock.release()}catch(e){}
+var ms=tMs("run"),add=+R.dist.toFixed(2),msg="Run cancelled.";
+if(log){S.prog.run=Math.min(tgt(EX[3]),+(S.prog.run+add).toFixed(2));if(R.pts.length>1)S.lastRun={pts:thin(R.pts),km:add,ms:ms};msg=add>0?"Run logged: "+add.toFixed(2)+" km.":"Run time saved, but no distance was detected. Use + to log distance."}
+R.on=false;R.id=null;R.lock=null;R.pts=[];R.dist=0;T.run={acc:0,start:0,run:false};save();rQuest();toast(msg)}
+function mapSvg(pts){var W=320,H=170,s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Your running route" style="width:100%;height:auto;display:block;border-radius:10px"><rect width="'+W+'" height="'+H+'" style="fill:var(--bg)"/>';
+for(var g=1;g<8;g++)s+='<path d="M'+g*40+' 0V'+H+'" style="stroke:var(--bar)" stroke-width="1"/>';
+for(g=1;g<4;g++)s+='<path d="M0 '+g*42+'H'+W+'" style="stroke:var(--bar)" stroke-width="1"/>';
+if(!pts||pts.length<2)return s+'<text x="160" y="90" text-anchor="middle" style="fill:var(--dim)" font-size="13">Your route will appear here</text></svg>';
+var la=pts.map(function(p){return p.lat}),lo=pts.map(function(p){return p.lon}),a0=Math.min.apply(null,la),a1=Math.max.apply(null,la),o0=Math.min.apply(null,lo),o1=Math.max.apply(null,lo),k=Math.cos((a0+a1)/2*Math.PI/180),w=Math.max((o1-o0)*k,1e-5),h=Math.max(a1-a0,1e-5),sc=Math.min((W-32)/w,(H-32)/h),ox=(W-w*sc)/2,oy=(H-h*sc)/2;
+var xy=pts.map(function(p){return[ox+(p.lon-o0)*k*sc,oy+(a1-p.lat)*sc]});
+s+='<polyline points="'+xy.map(function(a){return a[0].toFixed(1)+","+a[1].toFixed(1)}).join(" ")+'" fill="none" style="stroke:var(--line)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>';
+var a=xy[0],b=xy[xy.length-1];
+return s+'<circle cx="'+a[0].toFixed(1)+'" cy="'+a[1].toFixed(1)+'" r="6" style="fill:var(--ok)"/><circle cx="'+b[0].toFixed(1)+'" cy="'+b[1].toFixed(1)+'" r="7" style="fill:var(--line);stroke:var(--panel)" stroke-width="3"/></svg>'}
+function runPanel(ok){var on=R.on;
+return '<div class="runbox"><div class="stats3"><div><span class="dim small">Time</span><b class="clock" data-clock="run">'+mmss(tMs("run"))+'</b></div><div><span class="dim small">Distance</span><b class="clock" data-dist>'+R.dist.toFixed(2)+' km</b></div><div><span class="dim small">Pace per km</span><b class="clock" data-gp>--:--</b></div></div><div data-map data-n="'+R.pts.length+'">'+mapSvg(R.pts)+'</div><p class="dim small" data-gpsmsg>'+(on?(R.err||"Searching for GPS signal..."):"Press Start run, then run outside with this page open. Your phone GPS measures the distance. Location stays on this device.")+'</p>'+(on?'<div class="btns"><button class="main" id="rfinish">Finish and log run</button><button class="ghost" id="rcancel">Cancel</button></div>':'<button class="main" id="rstart" '+(S.done||ok?"disabled":"")+'>Start run</button>')+'</div>'}
+function rQuest(){if(!S.start)S.start=cur();
+var d=dstr(0),n=0;EX.forEach(function(e){if(S.prog[e.id]>=tgt(e))n++});
+var h='<div class="win today"><div class="row"><div><div class="dim small">'+d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"})+'</div><h1>Daily quest</h1></div><div class="streak"><b>'+S.streak+'</b><span class="dim small">day streak</span></div></div><div class="week">';
+for(var i=6;i>=0;i--){var dd=dstr(-i),dy=cur()-i,st=S.hist&&S.hist[dy]?"done":i===0?"today":dy>=S.start?"missed":"none";
+h+='<div class="wd '+st+'"><span class="dim small">'+dd.toLocaleDateString(undefined,{weekday:"narrow"})+'</span><i>'+dd.getDate()+'</i></div>'}
+h+='</div><p class="dim small">Green: quest done. Red: missed. Outlined: today.</p><div class="bar"><i style="width:'+(S.done?100:n/EX.length*100)+'%"></i></div><div class="row small"><span>'+(S.done?"Quest complete. Great work!":n+" of "+EX.length+" exercises done")+'</span><span class="dim" data-cd></span></div></div>';
+h+='<div class="win"><h2>Exercises</h2><p class="dim small">Tap + after each set. Finish every exercise, then press Complete quest.</p>';
+if(!S.prof)h+='<p class="warn">Add your height and weight in the Player tab so quests fit your body.</p>';
+if(S.penalty)h+='<p class="warn">Penalty quest: you missed a day, so targets are 50% higher today.</p>';
+EX.forEach(function(e){var t=tgt(e),p=S.prog[e.id],ok=p>=t,lab=e.id==="run"?p.toFixed(2):fmt(p);
+h+='<div class="q'+(ok?" done":"")+'"><div class="row"><div><div class="name">'+e.name+' ['+lab+' / '+fmt(t)+e.u+']</div><div class="dim small">Builds '+SN[e.stat]+'</div></div><span class="btns"><button class="ghost" data-undo="'+e.id+'" aria-label="Remove '+e.step+e.u+' from '+e.name+'" '+(S.done||p<=0?"disabled":"")+'>\u2212</button><button data-ex="'+e.id+'" '+(S.done||ok?"disabled":"")+'>+'+e.step+e.u+'</button></span></div><div class="bar sm"><i style="width:'+Math.min(100,p/t*100)+'%"></i></div>'+(e.id==="run"?runPanel(ok):"")+'</div>'});
+var met=EX.every(function(e){return S.prog[e.id]>=tgt(e)});
+h+='<button class="main" id="claim" '+(S.done||!met?"disabled":"")+'>'+(S.done?"Quest complete":"Complete quest")+'</button><p class="dim small">Reward: 100 XP, 50 points, +1 to each stat.</p></div>';
+if(S.emg){var g=S.emg,pl=g.name==="Plank seconds";h+='<div class="win"><h2>Emergency quest</h2><p class="dim small">A sudden bonus quest. Finish it for 75 XP and 40 points.</p><div class="row"><div class="name">'+g.name+' ['+g.p+' / '+g.t+']</div>'+(pl?'':'<button data-emg="1" '+(g.done||g.p>=g.t?"disabled":"")+'>+5</button>')+'</div>'+(pl&&!g.done&&g.p<g.t?timerUi("plank"):"")+'<button class="main" id="claimE" '+(g.done||g.p<g.t?"disabled":"")+'>'+(g.done?"Emergency cleared":"Clear emergency quest")+'</button></div>'}
+if(S.lastRun&&!R.on){var L=S.lastRun;h+='<div class="win"><h2>Last run</h2>'+mapSvg(L.pts)+'<p>'+L.km.toFixed(2)+' km in '+mmss(L.ms)+(L.km>=0.05?' · pace '+mmss(L.ms/L.km)+' per km':'')+'</p></div>'}
+document.getElementById("quest").innerHTML=h}
+function rStatus(){var pct=Math.min(100,S.xp/need()*100),h='<div class="win"><div class="top"><div><h1>Player status</h1><div class="gold">'+TITLES[rank()]+'</div><div class="dim">Level '+S.level+' · '+S.pts+' points to spend</div></div><div class="rank">'+rank()+'</div></div><div class="bar" role="progressbar" aria-valuenow="'+Math.round(pct)+'" aria-valuemin="0" aria-valuemax="100"><i style="width:'+pct+'%"></i></div><div class="dim small">'+S.xp+' / '+need()+' XP to reach level '+(S.level+1)+'</div></div>';
+h+='<div class="win"><h2>Stats</h2>';if(S.free>0)h+='<p class="gold">'+S.free+' free points to assign. Tap + to upgrade.</p>';
+Object.keys(S.stats).forEach(function(k){h+='<div class="stat"><span>'+SN[k]+'</span><span><b>'+S.stats[k]+'</b> '+(S.free>0?'<button data-add="'+k+'" aria-label="Add point to '+SN[k]+'">+</button>':'')+'</span></div>'});
+h+='</div><div class="win"><h2>Shadow army</h2>'+(S.shadows.length?'<p>'+S.shadows.join(", ")+'</p>':'<p class="dim">No shadows yet. Clear a gate for a chance to extract one.</p>')+'</div>';
+h+='<details class="win"><summary>How it works</summary><ol><li>Do your daily quest every day (Quest tab).</li><li>Quests give XP and points. Enough XP raises your level.</li><li>Each level-up gives 3 free points for Strength, Vitality, Agility or Stamina.</li><li>Spend points on rewards in the Shop.</li><li>Miss a day and the next quest is harder. A rest-day pass cancels that.</li><li>Gates are big challenges that give shadow soldiers.</li></ol></details>';
+document.getElementById("status").innerHTML=h}
+setInterval(function(){
+if(R.on){var de=document.querySelector("[data-dist]");if(de)de.textContent=R.dist.toFixed(2)+" km";
+var gp=document.querySelector("[data-gp]");if(gp)gp.textContent=R.dist>=0.05?mmss(tMs("run")/R.dist):"--:--";
+var gm=document.querySelector("[data-gpsmsg]");if(gm)gm.textContent=R.err||(R.pts.length?"GPS active":"Searching for GPS signal...");
+var m=document.querySelector("[data-map]");if(m&&+m.dataset.n!==R.pts.length){m.innerHTML=mapSvg(R.pts);m.dataset.n=R.pts.length}}
+var cd=document.querySelector("[data-cd]");if(cd){var n=new Date(),e=new Date(n);e.setHours(24,0,0,0);var mm=Math.floor((e-n)/6e4);cd.textContent="New quest in "+Math.floor(mm/60)+"h "+mm%60+"m"}
+if(S.day!==cur()){rollover();save();renderAll();toast(S.note||"A new day has begun. Your new quest is ready.")}},1000);
+document.addEventListener("visibilitychange",function(){if(!document.hidden&&S.day!==cur()){rollover();save();renderAll();toast(S.note||"A new day has begun. Your new quest is ready.")}});
+var T={};
+function tEl(id){return T[id]||(T[id]={acc:0,start:0,run:false})}
+function tMs(id){var t=tEl(id);return t.acc+(t.run?Date.now()-t.start:0)}
+function mmss(ms){var s=Math.floor(ms/1000);return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+function timerUi(id){var t=tEl(id);return '<div class="timer"><span class="clock" data-clock="'+id+'">'+mmss(tMs(id))+'</span><span class="btns"><button data-tstart="'+id+'">'+(t.run?(id==="plank"?"Stop and log":"Pause"):(t.acc&&id!=="plank"?"Resume":"Start"))+'</button><button class="ghost" data-treset="'+id+'">Reset</button></span></div>'+(id==="run"?'<div class="dim small" data-pace="run">Log your distance with + to see your pace.</div>':'<div class="dim small">Hold the plank, then stop to log your seconds.</div>')}
+function logPlank(){var g=S.emg;if(!g)return;var secs=Math.floor(tMs("plank")/1000);T.plank={acc:0,start:0,run:false};g.p=Math.min(g.t,g.p+secs);save();rQuest();try{navigator.vibrate&&navigator.vibrate(200)}catch(e){}toast(secs+" seconds logged."+(g.p>=g.t?" Target reached.":""))}
+setInterval(function(){document.querySelectorAll("[data-clock]").forEach(function(el){el.textContent=mmss(tMs(el.dataset.clock))});
+if(T.plank&&T.plank.run&&S.emg&&Math.floor(tMs("plank")/1000)>=S.emg.t-S.emg.p){T.plank.acc=tMs("plank");T.plank.run=false;logPlank()}},250);
+function renderAll(){rStatus();rQuest();rGate();rShop();pinfo()}
+function show(v){if(VIEWS.indexOf(v)<0)v="quest";
+VIEWS.forEach(function(x){document.getElementById(x).hidden=x!==v});
+document.querySelectorAll("nav a").forEach(function(a){if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+window.scrollTo(0,0)}
+function go(v){location.hash=v}
+function route(){show(location.hash.replace("#",""))}
+document.addEventListener("click",function(ev){var b=ev.target.closest("button,a");if(!b)return;var d=b.dataset;
+if(d.ex){var e=EX.filter(function(x){return x.id===d.ex})[0];S.prog[e.id]=Math.min(tgt(e),S.prog[e.id]+e.step);save();rQuest()}
+else if(b.id==="rstart"){rStart()}
+else if(b.id==="rfinish"){rEnd(true)}
+else if(b.id==="rcancel"){if(confirm("Cancel this run without logging it?"))rEnd(false)}
+else if(d.tstart){var tt=tEl(d.tstart);if(tt.run){tt.acc+=Date.now()-tt.start;tt.run=false;if(d.tstart==="plank"){logPlank();return}}else{tt.start=Date.now();tt.run=true}rQuest()}
+else if(d.treset){T[d.treset]={acc:0,start:0,run:false};rQuest()}
+else if(d.undo){var e2=EX.filter(function(x){return x.id===d.undo})[0];S.prog[e2.id]=Math.max(0,S.prog[e2.id]-e2.step);save();rQuest()}
+else if(b.id==="claim"){(S.hist=S.hist||{})[cur()]=1;S.pts+=50;S.streak++;EX.forEach(function(e){S.stats[e.stat]++});var up=addXp(100);S.done=true;S.penalty=false;S.note="";save();renderAll();toast(up?"Quest complete. Level up! You are level "+S.level+". "+(3*up)+" stat points to assign.":"Quest complete. +100 XP, +50 points.")}
+else if(d.emg){S.emg.p=Math.min(S.emg.t,S.emg.p+5);save();rQuest()}
+else if(b.id==="claimE"){S.emg.done=true;S.pts+=40;var u=addXp(75);save();renderAll();toast("Emergency quest cleared. +75 XP, +40 points."+(u?" Level up!":""))}
+else if(d.gate){var g=GATES.filter(function(x){return x.id===d.gate})[0];if(!confirm("Did you finish every part of this gate?"))return;S.gates[g.id]=cur();S.pts+=g.rw/3|0;var u2=addXp(g.rw),x=extract();save();renderAll();toast("Gate cleared. +"+g.rw+" XP."+x+(u2?" Level up!":""))}
+else if(d.add){if(S.free>0){S.free--;S.stats[d.add]++;save();rStatus()}}
+else if(d.buy){var i=SHOP.filter(function(x){return x.id===d.buy})[0];if(S.pts>=i.cost){S.pts-=i.cost;S.inv[i.id]=(S.inv[i.id]||0)+1;save();renderAll();toast(i.name+" added to your inventory.")}}
+else if(d.use){S.inv[d.use]--;var u3=d.use==="potion"?addXp(50):0;save();renderAll();toast(d.use==="potion"?"Potion used. +50 XP."+(u3?" Level up!":""):"Reward used. Enjoy it.")}
+else if(b.id==="theme"){var dk=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);S.theme=dk?"light":"dark";applyTheme();save()}
+else if(b.id==="saveP"){var h=parseFloat(document.getElementById("h").value),w=parseFloat(document.getElementById("w").value);
+if(!(h>=100&&h<=230)||!(w>=30&&w<=250)){toast("Enter a height between 100 and 230 cm and a weight between 30 and 250 kg.");return}
+S.prof={h:h,w:w,lv:parseFloat(document.getElementById("lv").value)};save();renderAll();toast("Player data saved. Quests adjusted.");go("quest")}
+else if(b.id==="nextday"){ev.preventDefault();S.offset++;rollover();save();renderAll();toast(S.note||"A new day has started.");go("quest")}
+else if(b.id==="reset"){ev.preventDefault();if(confirm("Reset all progress?")){S=fresh();save();renderAll();document.getElementById("h").value="";document.getElementById("w").value=""}}});
+var sx=0,sy=0;
+document.addEventListener("touchstart",function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+document.addEventListener("touchend",function(e){if(e.target.closest("input,select"))return;var dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+if(Math.abs(dx)>80&&Math.abs(dy)<50){var i=VIEWS.indexOf(location.hash.replace("#","")||"quest"),n=i+(dx<0?1:-1);if(n>=0&&n<VIEWS.length)go(VIEWS[n])}},{passive:true});
+window.addEventListener("hashchange",route);
+load();applyTheme();
+if(S.prof){document.getElementById("h").value=S.prof.h;document.getElementById("w").value=S.prof.w;document.getElementById("lv").value=String(S.prof.lv)}
+renderAll();
+if(!location.hash)location.hash=S.prof?"quest":"profile";
+route();
+if("serviceWorker" in navigator)window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
+if(!S.prof)toast("Awakening. Enter your height and weight so the System can set your quests.");
+else if(S.note)toast(S.note);
+</script>
+</body>
+</html>
